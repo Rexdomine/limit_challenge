@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: limit-challenge-backend
+    runtime: python
+    repo: https://github.com/Rexdomine/limit_challenge.git
+    branch: main
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: sh -c 'python manage.py migrate && python manage.py seed_submissions && gunicorn server.wsgi:application --bind 0.0.0.0:$PORT'
+    healthCheckPath: /health/
+    envVars:
+      - key: DJANGO_DEBUG
+        value: false
+      - key: DJANGO_SECRET_KEY
+        generateValue: true

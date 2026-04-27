@@ -1,8 +1,13 @@
+from django.http import JsonResponse
 from django.db.models import Count, OuterRef, Prefetch, Subquery
 from rest_framework import viewsets
 
 from submissions import models, serializers
 from submissions.filters.submission import SubmissionFilterSet
+
+
+def healthcheck(_request):
+    return JsonResponse({"status": "ok"})
 
 
 class SubmissionViewSet(viewsets.ReadOnlyModelViewSet):
