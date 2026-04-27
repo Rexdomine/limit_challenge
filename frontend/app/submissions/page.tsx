@@ -71,6 +71,14 @@ function formatLabel(value: string) {
     .join(' ');
 }
 
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Failed to load submissions. Check the backend server and API base URL.';
+}
+
 function SubmissionsPageContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -281,7 +289,7 @@ function SubmissionsPageContent() {
               />
             }
           >
-            Failed to load submissions. Check the backend server and API base URL.
+            {getErrorMessage(submissionsQuery.error)}
           </Alert>
         ) : null}
 
