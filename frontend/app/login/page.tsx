@@ -5,7 +5,7 @@ import { Box, CircularProgress } from '@mui/material';
 
 import LoginScreen from '@/components/login-screen';
 
-export default function HomePage() {
+export default function LoginPage() {
   return (
     <Suspense
       fallback={

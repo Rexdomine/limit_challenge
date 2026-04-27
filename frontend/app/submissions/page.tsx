@@ -21,6 +21,8 @@ import {
 } from '@mui/material';
 import { Suspense, startTransition, useMemo } from 'react';
 
+import AuthGate from '@/components/auth-gate';
+import ReviewerShell from '@/components/reviewer-shell';
 import { useBrokerOptions } from '@/lib/hooks/useBrokerOptions';
 import { useSubmissionsList } from '@/lib/hooks/useSubmissions';
 import { SubmissionPriority, SubmissionStatus } from '@/lib/types';
@@ -410,14 +412,18 @@ function SubmissionsPageContent() {
 
 export default function SubmissionsPage() {
   return (
-    <Suspense
-      fallback={
-        <Container maxWidth="lg" sx={{ py: 6 }}>
-          <Typography color="text.secondary">Loading submissions workspace...</Typography>
-        </Container>
-      }
-    >
-      <SubmissionsPageContent />
-    </Suspense>
+    <AuthGate>
+      <ReviewerShell>
+        <Suspense
+          fallback={
+            <Container maxWidth="lg" sx={{ py: 6 }}>
+              <Typography color="text.secondary">Loading submissions workspace...</Typography>
+            </Container>
+          }
+        >
+          <SubmissionsPageContent />
+        </Suspense>
+      </ReviewerShell>
+    </AuthGate>
   );
 }
