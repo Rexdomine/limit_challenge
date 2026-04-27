@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import {
-  Alert,
   Box,
   Button,
   Card,
@@ -809,6 +808,10 @@ export default function SubmissionDetailPage() {
   const submissionId = params?.id ?? '';
   const detailQuery = useSubmissionDetail(submissionId);
   const submission = detailQuery.data;
+  const diagnosticsMessage =
+    detailQuery.error instanceof Error
+      ? detailQuery.error.message
+      : 'ERR_CONNECTION_TIMEOUT: Upstream server did not respond.';
 
   return (
     <AuthGate>
@@ -832,10 +835,147 @@ export default function SubmissionDetailPage() {
         ) : null}
 
         {detailQuery.isError ? (
-          <Container maxWidth="lg" sx={{ py: 6 }}>
-            <Alert severity="error" sx={{ borderRadius: '4px' }}>
-              Failed to load the submission detail view.
-            </Alert>
+          <Container
+            maxWidth={false}
+            sx={{
+              px: { xs: 2, md: 3 },
+              py: 3,
+              minHeight: 'calc(100vh - 64px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Card
+              variant="outlined"
+              sx={{
+                width: '100%',
+                maxWidth: 560,
+                borderColor: palette.outlineVariant,
+                borderRadius: '4px',
+                boxShadow: '0px 4px 6px -1px rgba(15, 23, 42, 0.08)',
+              }}
+            >
+              <Stack spacing={3} alignItems="center" sx={{ px: 4, py: 4, textAlign: 'center' }}>
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '999px',
+                    bgcolor: palette.errorContainer,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <SymbolIcon size={32} color={palette.error}>
+                    warning
+                  </SymbolIcon>
+                </Box>
+
+                <Box>
+                  <Typography
+                    sx={{
+                      fontSize: 24,
+                      lineHeight: '32px',
+                      letterSpacing: '-0.01em',
+                      fontWeight: 600,
+                      color: palette.onSurface,
+                      mb: 1,
+                    }}
+                  >
+                    Failed to load submission
+                  </Typography>
+                  <Typography
+                    sx={{
+                      px: { xs: 0, sm: 2 },
+                      fontSize: 14,
+                      lineHeight: '20px',
+                      color: palette.onSurfaceVariant,
+                    }}
+                  >
+                    We encountered an unexpected error while retrieving the data package. This could
+                    be due to a temporary network disruption or a data integrity check failure.
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    width: '100%',
+                    bgcolor: palette.background,
+                    border: `1px solid ${palette.outlineVariant}`,
+                    borderRadius: '4px',
+                    p: 1.5,
+                    textAlign: 'left',
+                  }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                    <SymbolIcon size={16} color={palette.onSurfaceVariant}>
+                      terminal
+                    </SymbolIcon>
+                    <Typography
+                      sx={{
+                        fontSize: 12,
+                        lineHeight: '16px',
+                        letterSpacing: '0.05em',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        color: palette.onSurfaceVariant,
+                      }}
+                    >
+                      Diagnostics
+                    </Typography>
+                  </Stack>
+                  <Typography
+                    sx={{
+                      fontSize: 12,
+                      lineHeight: '16px',
+                      color: palette.onSecondaryContainer,
+                      fontFamily: 'var(--font-geist-mono), monospace',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {diagnosticsMessage}
+                  </Typography>
+                </Box>
+
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+                  <Button
+                    component={Link}
+                    href="/submissions"
+                    variant="outlined"
+                    sx={{
+                      borderColor: palette.outlineVariant,
+                      color: palette.onSurface,
+                      borderRadius: '4px',
+                      textTransform: 'none',
+                      '&:hover': {
+                        borderColor: palette.primaryContainer,
+                        bgcolor: palette.surfaceContainerHigh,
+                      },
+                    }}
+                  >
+                    Return to List
+                  </Button>
+                  <Button
+                    onClick={() => detailQuery.refetch()}
+                    variant="contained"
+                    startIcon={<SymbolIcon size={18}>refresh</SymbolIcon>}
+                    sx={{
+                      bgcolor: palette.primary,
+                      color: palette.onPrimary,
+                      borderRadius: '4px',
+                      textTransform: 'none',
+                      '&:hover': { bgcolor: palette.primaryContainer },
+                    }}
+                  >
+                    Retry Connection
+                  </Button>
+                </Stack>
+              </Stack>
+            </Card>
           </Container>
         ) : null}
 
