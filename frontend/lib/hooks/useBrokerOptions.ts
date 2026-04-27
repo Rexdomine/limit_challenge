@@ -11,10 +11,15 @@ async function fetchBrokers() {
   return response.data.results;
 }
 
-export function useBrokerOptions() {
+interface QueryOptions {
+  enabled?: boolean;
+}
+
+export function useBrokerOptions(options?: QueryOptions) {
   return useQuery({
     queryKey: ['brokers'],
     queryFn: fetchBrokers,
     staleTime: 5 * 60_000,
+    enabled: options?.enabled ?? true,
   });
 }

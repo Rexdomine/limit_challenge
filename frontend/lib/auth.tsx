@@ -70,8 +70,16 @@ async function fetchSession() {
 }
 
 async function loginRequest(input: LoginInput) {
-  const response = await apiClient.post<SessionResponse>('/auth/login/', input);
-  return response.data;
+  await apiClient.post<SessionResponse>('/auth/login/', input);
+
+  const sessionResponse = await apiClient.get<SessionResponse>('/auth/session/');
+  if (!sessionResponse.data.authenticated) {
+    throw new Error(
+      'Reviewer session could not be confirmed after login. Sign in again and make sure cross-site cookies are allowed.',
+    );
+  }
+
+  return sessionResponse.data;
 }
 
 async function logoutRequest() {

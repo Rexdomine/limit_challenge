@@ -39,19 +39,24 @@ async function fetchSubmissionDetail(id: string | number) {
   return response.data;
 }
 
-export function useSubmissionsList(filters: SubmissionListFilters) {
+interface QueryOptions {
+  enabled?: boolean;
+}
+
+export function useSubmissionsList(filters: SubmissionListFilters, options?: QueryOptions) {
   return useQuery({
     queryKey: [SUBMISSIONS_QUERY_KEY, filters] as QueryKey,
     queryFn: () => fetchSubmissions(filters),
     placeholderData: keepPreviousData,
+    enabled: options?.enabled ?? true,
   });
 }
 
-export function useSubmissionDetail(id: string | number) {
+export function useSubmissionDetail(id: string | number, options?: QueryOptions) {
   return useQuery({
     queryKey: [SUBMISSIONS_QUERY_KEY, id],
     queryFn: () => fetchSubmissionDetail(id),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && (options?.enabled ?? true),
     staleTime: 60_000,
   });
 }
