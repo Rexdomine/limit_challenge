@@ -1,16 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  Box,
-  Button,
-  Card,
-  CircularProgress,
-  Container,
-  Divider,
-  Stack,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Card, Container, Divider, Stack, Typography } from '@mui/material';
 import { useParams } from 'next/navigation';
 
 import AuthGate from '@/components/auth-gate';
@@ -817,21 +808,402 @@ export default function SubmissionDetailPage() {
     <AuthGate>
       <ReviewerShell>
         {detailQuery.isLoading ? (
-          <Container maxWidth="lg" sx={{ py: 6 }}>
-            <Card
-              variant="outlined"
-              sx={{ borderColor: palette.outlineVariant, borderRadius: '4px' }}
-            >
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ px: 3, py: 2.5 }}>
-                <CircularProgress size={24} />
-                <Typography
-                  sx={{ fontSize: 14, lineHeight: '20px', color: palette.onSurfaceVariant }}
-                >
-                  Loading submission details...
-                </Typography>
-              </Stack>
-            </Card>
-          </Container>
+          <Box sx={{ minHeight: '100vh', bgcolor: palette.background }}>
+            <Container maxWidth={false} sx={{ px: { xs: 2, md: 3 }, py: 3 }}>
+              <Box
+                sx={{
+                  maxWidth: '1280px',
+                  mx: 'auto',
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', lg: 'minmax(0,8fr) minmax(320px,4fr)' },
+                  gap: 2.5,
+                }}
+              >
+                <Stack spacing={3}>
+                  <Stack spacing={1.5} sx={{ mb: 1 }}>
+                    <Box
+                      sx={{
+                        width: 96,
+                        height: 24,
+                        borderRadius: '4px',
+                        bgcolor: palette.surfaceContainerHigh,
+                        animation: 'pulse 1.8s ease-in-out infinite',
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        width: { xs: '100%', md: '75%' },
+                        maxWidth: 520,
+                        height: 40,
+                        borderRadius: '4px',
+                        bgcolor: palette.surfaceContainerHigh,
+                        animation: 'pulse 1.8s ease-in-out infinite',
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        width: { xs: '75%', md: '50%' },
+                        maxWidth: 360,
+                        height: 20,
+                        borderRadius: '4px',
+                        bgcolor: palette.surfaceContainerHigh,
+                        animation: 'pulse 1.8s ease-in-out infinite',
+                      }}
+                    />
+                  </Stack>
+
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      borderColor: palette.outlineVariant,
+                      borderRadius: '4px',
+                      boxShadow: '0px 4px 6px -1px rgba(15, 23, 42, 0.08)',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        p: 3,
+                        borderBottom: `1px solid ${palette.outlineVariant}`,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: '25%',
+                          minWidth: 120,
+                          height: 24,
+                          borderRadius: '4px',
+                          bgcolor: palette.surfaceContainerHigh,
+                          animation: 'pulse 1.8s ease-in-out infinite',
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          width: 80,
+                          height: 32,
+                          borderRadius: '4px',
+                          bgcolor: palette.surfaceContainerHigh,
+                          animation: 'pulse 1.8s ease-in-out infinite',
+                        }}
+                      />
+                    </Box>
+                    <Box
+                      sx={{
+                        p: 3,
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                        columnGap: 2.5,
+                        rowGap: 2,
+                      }}
+                    >
+                      {[
+                        { labelWidth: 80, fieldHeight: 40 },
+                        { labelWidth: 96, fieldHeight: 40 },
+                        { labelWidth: 128, fieldHeight: 96, full: true },
+                        { labelWidth: 64, fieldHeight: 40 },
+                        { labelWidth: 112, fieldHeight: 40 },
+                      ].map((item, index) => (
+                        <Stack
+                          key={index}
+                          spacing={1}
+                          sx={{ gridColumn: item.full ? { md: '1 / -1' } : undefined }}
+                        >
+                          <Box
+                            sx={{
+                              width: item.labelWidth,
+                              height: 16,
+                              borderRadius: '4px',
+                              bgcolor: palette.surfaceContainerHigh,
+                              animation: 'pulse 1.8s ease-in-out infinite',
+                            }}
+                          />
+                          <Box
+                            sx={{
+                              width: '100%',
+                              height: item.fieldHeight,
+                              borderRadius: '4px',
+                              bgcolor: palette.surfaceContainerHigh,
+                              animation: 'pulse 1.8s ease-in-out infinite',
+                            }}
+                          />
+                        </Stack>
+                      ))}
+                    </Box>
+                  </Card>
+
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      borderColor: palette.outlineVariant,
+                      borderRadius: '4px',
+                      boxShadow: '0px 4px 6px -1px rgba(15, 23, 42, 0.08)',
+                    }}
+                  >
+                    <Box sx={{ p: 3, borderBottom: `1px solid ${palette.outlineVariant}` }}>
+                      <Box
+                        sx={{
+                          width: '33%',
+                          minWidth: 160,
+                          height: 24,
+                          borderRadius: '4px',
+                          bgcolor: palette.surfaceContainerHigh,
+                          animation: 'pulse 1.8s ease-in-out infinite',
+                        }}
+                      />
+                    </Box>
+                    {[0, 1, 2].map((row, index) => (
+                      <Box
+                        key={row}
+                        sx={{
+                          px: 3,
+                          py: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          borderBottom: index < 2 ? `1px solid ${palette.outlineVariant}` : 'none',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: '4px',
+                            bgcolor: palette.surfaceContainerHigh,
+                            flexShrink: 0,
+                            animation: 'pulse 1.8s ease-in-out infinite',
+                          }}
+                        />
+                        <Stack spacing={1} sx={{ flex: 1 }}>
+                          <Box
+                            sx={{
+                              width: index === 0 ? '50%' : index === 1 ? '40%' : '60%',
+                              maxWidth: 320,
+                              height: 16,
+                              borderRadius: '4px',
+                              bgcolor: palette.surfaceContainerHigh,
+                              animation: 'pulse 1.8s ease-in-out infinite',
+                            }}
+                          />
+                          <Box
+                            sx={{
+                              width: index === 0 ? '25%' : index === 1 ? '33%' : '20%',
+                              maxWidth: 180,
+                              height: 12,
+                              borderRadius: '4px',
+                              bgcolor: palette.surfaceContainerHigh,
+                              animation: 'pulse 1.8s ease-in-out infinite',
+                            }}
+                          />
+                        </Stack>
+                        <Box
+                          sx={{
+                            width: 96,
+                            height: 32,
+                            borderRadius: '4px',
+                            bgcolor: palette.surfaceContainerHigh,
+                            flexShrink: 0,
+                            animation: 'pulse 1.8s ease-in-out infinite',
+                          }}
+                        />
+                      </Box>
+                    ))}
+                  </Card>
+                </Stack>
+
+                <Stack spacing={3}>
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      borderColor: palette.outlineVariant,
+                      borderRadius: '4px',
+                      boxShadow: '0px 4px 6px -1px rgba(15, 23, 42, 0.08)',
+                    }}
+                  >
+                    <Stack spacing={2} sx={{ p: 3 }}>
+                      {[0, 1].map((item) => (
+                        <Box
+                          key={item}
+                          sx={{
+                            width: '100%',
+                            height: 40,
+                            borderRadius: '4px',
+                            bgcolor: palette.surfaceContainerHigh,
+                            animation: 'pulse 1.8s ease-in-out infinite',
+                          }}
+                        />
+                      ))}
+                      <Box
+                        sx={{
+                          pt: 1,
+                          borderTop: `1px solid ${palette.outlineVariant}`,
+                          display: 'flex',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 128,
+                            height: 16,
+                            borderRadius: '4px',
+                            bgcolor: palette.surfaceContainerHigh,
+                            animation: 'pulse 1.8s ease-in-out infinite',
+                          }}
+                        />
+                      </Box>
+                    </Stack>
+                  </Card>
+
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      borderColor: palette.outlineVariant,
+                      borderRadius: '4px',
+                      boxShadow: '0px 4px 6px -1px rgba(15, 23, 42, 0.08)',
+                    }}
+                  >
+                    <Box sx={{ p: 3 }}>
+                      <Box
+                        sx={{
+                          width: '50%',
+                          minWidth: 140,
+                          height: 24,
+                          borderRadius: '4px',
+                          bgcolor: palette.surfaceContainerHigh,
+                          animation: 'pulse 1.8s ease-in-out infinite',
+                          mb: 3,
+                        }}
+                      />
+                      <Box sx={{ position: 'relative' }}>
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            left: 11,
+                            top: 8,
+                            bottom: 24,
+                            width: 2,
+                            bgcolor: palette.surfaceContainerHigh,
+                            animation: 'pulse 1.8s ease-in-out infinite',
+                          }}
+                        />
+                        {[0, 1, 2, 3].map((step, index) => (
+                          <Box
+                            key={step}
+                            sx={{
+                              position: 'relative',
+                              zIndex: 1,
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: 2,
+                              pb: index < 3 ? 2 : 0,
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: '999px',
+                                border: `2px solid ${palette.surface}`,
+                                bgcolor: palette.surfaceContainerHigh,
+                                flexShrink: 0,
+                                animation: 'pulse 1.8s ease-in-out infinite',
+                              }}
+                            />
+                            <Stack spacing={1} sx={{ pt: 0.5, flex: 1 }}>
+                              <Box
+                                sx={{
+                                  width:
+                                    index === 0
+                                      ? '75%'
+                                      : index === 1
+                                        ? '80%'
+                                        : index === 2
+                                          ? '66%'
+                                          : '50%',
+                                  maxWidth: 220,
+                                  height: 16,
+                                  borderRadius: '4px',
+                                  bgcolor: palette.surfaceContainerHigh,
+                                  animation: 'pulse 1.8s ease-in-out infinite',
+                                }}
+                              />
+                              {index < 3 ? (
+                                <Box
+                                  sx={{
+                                    width: index === 0 ? '50%' : index === 1 ? '33%' : '25%',
+                                    maxWidth: 160,
+                                    height: 12,
+                                    borderRadius: '4px',
+                                    bgcolor: palette.surfaceContainerHigh,
+                                    animation: 'pulse 1.8s ease-in-out infinite',
+                                  }}
+                                />
+                              ) : null}
+                            </Stack>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
+                  </Card>
+
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      borderColor: palette.outlineVariant,
+                      borderRadius: '4px',
+                      boxShadow: '0px 4px 6px -1px rgba(15, 23, 42, 0.08)',
+                    }}
+                  >
+                    <Box sx={{ p: 3 }}>
+                      <Box
+                        sx={{
+                          width: '40%',
+                          minWidth: 120,
+                          height: 24,
+                          borderRadius: '4px',
+                          bgcolor: palette.surfaceContainerHigh,
+                          animation: 'pulse 1.8s ease-in-out infinite',
+                          mb: 2,
+                        }}
+                      />
+                      <Stack spacing={2}>
+                        {[0, 1, 2].map((item, index) => (
+                          <Stack
+                            key={item}
+                            direction="row"
+                            justifyContent="space-between"
+                            alignItems="center"
+                          >
+                            <Box
+                              sx={{
+                                width: index === 0 ? '25%' : index === 1 ? '33%' : '20%',
+                                maxWidth: 120,
+                                height: 16,
+                                borderRadius: '4px',
+                                bgcolor: palette.surfaceContainerHigh,
+                                animation: 'pulse 1.8s ease-in-out infinite',
+                              }}
+                            />
+                            <Box
+                              sx={{
+                                width: index === 0 ? '33%' : index === 1 ? '25%' : '40%',
+                                maxWidth: 160,
+                                height: 16,
+                                borderRadius: '4px',
+                                bgcolor: palette.surfaceContainerHigh,
+                                animation: 'pulse 1.8s ease-in-out infinite',
+                              }}
+                            />
+                          </Stack>
+                        ))}
+                      </Stack>
+                    </Box>
+                  </Card>
+                </Stack>
+              </Box>
+            </Container>
+          </Box>
         ) : null}
 
         {detailQuery.isError ? (
