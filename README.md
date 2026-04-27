@@ -76,8 +76,17 @@ polish.
 
 ## Environment Variables
 
-- Frontend requests default to `http://localhost:8000/api`. Override this by creating
-  `frontend/.env.local` and setting `NEXT_PUBLIC_API_BASE_URL`.
+- In local development, frontend requests default to `http://localhost:8000/api` when you run the app on `localhost`.
+- For any hosted deployment, `NEXT_PUBLIC_API_BASE_URL` must be set explicitly to the public backend `/api` URL.
+- Backend reviewer login defaults to:
+  - `REVIEWER_LOGIN_USERNAME=reviewer`
+  - `REVIEWER_LOGIN_PASSWORD=limit-review-2026`
+  - `REVIEWER_LOGIN_NAME=Demo Reviewer`
+
+### Deployment Variables
+
+- `frontend/.env.example` is the source of truth for required frontend env names.
+- For public Vercel deployments, `NEXT_PUBLIC_API_BASE_URL` must point at a hosted backend API, not localhost.
 
 ## Getting Started
 
@@ -99,11 +108,78 @@ python manage.py runserver 0.0.0.0:8000
 cd frontend
 npm install
 cp .env.example .env.local  # create if you want a custom API base
-# NEXT_PUBLIC_API_BASE_URL defaults to http://localhost:8000/api
+# NEXT_PUBLIC_API_BASE_URL defaults to http://localhost:8000/api only on localhost
 npm run dev
 ```
 
 Visit `http://localhost:3000/submissions` to start building.
+
+### Reviewer Login
+
+The app now ships with a login-only reviewer flow that protects the API and frontend workspace.
+
+- Default login URL: `http://localhost:3000/login`
+- Demo username: `reviewer`
+- Demo password: `limit-review-2026`
+- To override credentials, export `REVIEWER_LOGIN_USERNAME`, `REVIEWER_LOGIN_PASSWORD`, and
+  `REVIEWER_LOGIN_NAME` before starting the Django server.
+
+## Deployment
+
+The public frontend target for this project is the Next.js app in `frontend/`, with Vercel as the target platform.
+
+Run the repo-local preflight before attempting a deploy:
+
+```bash
+cd /home/node/.openclaw/workspace/limit_challenge
+bash scripts/vercel-preflight.sh
+```
+
+For a full verification pass including a production build:
+
+```bash
+cd /home/node/.openclaw/workspace/limit_challenge
+bash scripts/vercel-preflight.sh --build
+```
+
+Preview deploys should go through the repo-local wrapper so the build always uses the hosted Render backend automatically:
+
+```bash
+cd /home/node/.openclaw/workspace/limit_challenge
+bash scripts/vercel-preview-deploy.sh
+```
+
+Production deploy:
+
+```bash
+cd /home/node/.openclaw/workspace/limit_challenge
+bash scripts/vercel-production-deploy.sh
+```
+
+Both deploy wrappers now run a post-deploy smoke check so a deployment fails fast if:
+
+- the homepage is still serving the legacy `Go to Submissions` scaffold
+- the reviewer login shell is missing
+- the deployed frontend does not report the expected `NEXT_PUBLIC_API_BASE_URL`
+
+Full deployment notes and rollback guidance live in `docs/deployment.md`.
+
+### Backend Hosting
+
+The Django backend in `backend/` can be deployed independently to Render.
+
+- Blueprint spec: `render.yaml`
+- Repo-local helper: `bash scripts/render-backend-deploy.sh`
+- Default service name: `limit-challenge-backend`
+- Health endpoint: `/health/`
+
+Required runtime secret:
+
+- `RENDER_API_KEY` for the deploy helper
+
+Optional helper env:
+
+- `RENDER_FRONTEND_ORIGIN` to allow a hosted frontend origin through CORS and CSRF settings
 
 ## Development Workflow
 

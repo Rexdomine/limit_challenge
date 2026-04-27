@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Alert,
@@ -21,22 +21,17 @@ const DEMO_USERNAME = 'reviewer';
 const DEMO_PASSWORD = 'limit-review-2026';
 
 export default function LoginScreen() {
-  const { isAuthenticated, isLoading, login, loginError } = useAuth();
+  const { isAuthenticated, isLoading, login, authError } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [username, setUsername] = useState(DEMO_USERNAME);
   const [password, setPassword] = useState(DEMO_PASSWORD);
   const nextPath = searchParams.get('next') || '/submissions';
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      router.replace(nextPath);
-    }
-  }, [isAuthenticated, isLoading, nextPath, router]);
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     await login({ username, password });
+    router.replace(nextPath);
   }
 
   return (
@@ -120,7 +115,18 @@ export default function LoginScreen() {
                   Password: <strong>{DEMO_PASSWORD}</strong>
                 </Alert>
 
-                {loginError ? <Alert severity="error">{loginError}</Alert> : null}
+                {isAuthenticated ? (
+                  <Alert
+                    severity="success"
+                    action={
+                      <Button onClick={() => router.push(nextPath)}>Go to Submissions</Button>
+                    }
+                  >
+                    Reviewer session already active. Continue to the workspace when ready.
+                  </Alert>
+                ) : null}
+
+                {authError ? <Alert severity="error">{authError}</Alert> : null}
 
                 <Box component="form" onSubmit={handleSubmit}>
                   <Stack spacing={2}>
@@ -140,7 +146,11 @@ export default function LoginScreen() {
                       fullWidth
                     />
                     <Button type="submit" variant="contained" size="large" disabled={isLoading}>
-                      {isLoading ? 'Signing in...' : 'Open reviewer workspace'}
+                      {isLoading
+                        ? 'Signing in...'
+                        : isAuthenticated
+                          ? 'Refresh reviewer session'
+                          : 'Open reviewer workspace'}
                     </Button>
                   </Stack>
                 </Box>

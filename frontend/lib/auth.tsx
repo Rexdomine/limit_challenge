@@ -34,7 +34,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   login: (input: LoginInput) => Promise<void>;
   logout: () => Promise<void>;
-  loginError: string | null;
+  authError: string | null;
 }
 
 const AUTH_QUERY_KEY = ['auth', 'session'] as const;
@@ -114,9 +114,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
       logout: async () => {
         await logoutMutation.mutateAsync();
       },
-      loginError: loginMutation.error ? getErrorMessage(loginMutation.error) : null,
+      authError: loginMutation.error
+        ? getErrorMessage(loginMutation.error)
+        : sessionQuery.error
+          ? getErrorMessage(sessionQuery.error)
+          : null,
     }),
-    [loginMutation, logoutMutation, sessionQuery.data, sessionQuery.isLoading],
+    [loginMutation, logoutMutation, sessionQuery.data, sessionQuery.error, sessionQuery.isLoading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

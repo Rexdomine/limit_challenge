@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { keepPreviousData, QueryKey, useQuery } from '@tanstack/react-query';
 
-import { apiClient } from '@/lib/api-client';
+import { apiClient, requireApiBaseUrl } from '@/lib/api-client';
 import {
   PaginatedResponse,
   SubmissionDetail,
@@ -14,6 +14,7 @@ import {
 const SUBMISSIONS_QUERY_KEY = 'submissions';
 
 async function fetchSubmissions(filters: SubmissionListFilters) {
+  requireApiBaseUrl();
   const response = await apiClient.get<PaginatedResponse<SubmissionListItem>>('/submissions/', {
     params: {
       status: filters.status,
@@ -33,6 +34,7 @@ async function fetchSubmissionDetail(id: string | number) {
     throw new Error('Submission id is required');
   }
 
+  requireApiBaseUrl();
   const response = await apiClient.get<SubmissionDetail>(`/submissions/${id}/`);
   return response.data;
 }
