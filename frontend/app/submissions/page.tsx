@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import axios from 'axios';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Alert,
@@ -23,6 +24,7 @@ import { Suspense, startTransition, useMemo } from 'react';
 
 import AuthGate from '@/components/auth-gate';
 import ReviewerShell from '@/components/reviewer-shell';
+import { useAuth } from '@/lib/auth';
 import { useBrokerOptions } from '@/lib/hooks/useBrokerOptions';
 import { useSubmissionsList } from '@/lib/hooks/useSubmissions';
 import { SubmissionPriority, SubmissionStatus } from '@/lib/types';
@@ -72,6 +74,14 @@ function formatLabel(value: string) {
 }
 
 function getErrorMessage(error: unknown) {
+  if (axios.isAxiosError<{ detail?: string }>(error)) {
+    if (error.response?.status === 403) {
+      return 'Your reviewer session is not active. Sign in again to load submissions.';
+    }
+
+    return error.response?.data?.detail ?? error.message;
+  }
+
   if (error instanceof Error) {
     return error.message;
   }
@@ -80,6 +90,7 @@ function getErrorMessage(error: unknown) {
 }
 
 function SubmissionsPageContent() {
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -122,8 +133,9 @@ function SubmissionsPageContent() {
     [status, priority, brokerId, companyQuery, hasDocuments, hasNotes, page],
   );
 
-  const submissionsQuery = useSubmissionsList(filters);
-  const brokerQuery = useBrokerOptions();
+  const canQueryProtectedData = isAuthenticated && !isLoading;
+  const submissionsQuery = useSubmissionsList(filters, { enabled: canQueryProtectedData });
+  const brokerQuery = useBrokerOptions({ enabled: canQueryProtectedData });
   const submissions = submissionsQuery.data?.results ?? [];
   const totalCount = submissionsQuery.data?.count ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / 10));
