@@ -9,6 +9,7 @@ DEFAULT_ROOT_DIR="backend"
 DEFAULT_HEALTH_PATH="/health/"
 DEFAULT_BUILD_COMMAND="pip install -r requirements.txt"
 DEFAULT_START_COMMAND="sh -c 'python manage.py migrate && python manage.py seed_submissions && gunicorn server.wsgi:application --bind 0.0.0.0:\$PORT'"
+DEFAULT_PYTHON_VERSION="3.11.11"
 
 require_command() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -55,6 +56,7 @@ START_COMMAND="${RENDER_START_COMMAND:-$DEFAULT_START_COMMAND}"
 BRANCH="${RENDER_BRANCH:-$(git -C "$REPO_ROOT" branch --show-current)}"
 REPO_URL="${RENDER_REPO_URL:-$(git -C "$REPO_ROOT" remote get-url origin)}"
 FRONTEND_ORIGIN="${RENDER_FRONTEND_ORIGIN:-}"
+PYTHON_VERSION="${PYTHON_VERSION:-$DEFAULT_PYTHON_VERSION}"
 DJANGO_SECRET_KEY="${DJANGO_SECRET_KEY:-$(python3 - <<'PY'
 import secrets
 print(secrets.token_urlsafe(48))
@@ -112,14 +114,18 @@ fi
 api PUT "/v1/services/${SERVICE_ID}/env-vars/DJANGO_DEBUG" '{"value":"false"}' >/dev/null
 api PUT "/v1/services/${SERVICE_ID}/env-vars/DJANGO_SECRET_KEY" "{\"value\":\"${DJANGO_SECRET_KEY}\"}" >/dev/null
 api PUT "/v1/services/${SERVICE_ID}/env-vars/DJANGO_ALLOWED_HOSTS" "{\"value\":\"${HOSTS}\"}" >/dev/null
+api PUT "/v1/services/${SERVICE_ID}/env-vars/PYTHON_VERSION" "{\"value\":\"${PYTHON_VERSION}\"}" >/dev/null
 
 if [[ -n "$FRONTEND_ORIGIN" ]]; then
   api PUT "/v1/services/${SERVICE_ID}/env-vars/DJANGO_CORS_ALLOWED_ORIGINS" "{\"value\":\"${FRONTEND_ORIGIN}\"}" >/dev/null
   api PUT "/v1/services/${SERVICE_ID}/env-vars/DJANGO_CSRF_TRUSTED_ORIGINS" "{\"value\":\"${FRONTEND_ORIGIN}\"}" >/dev/null
 fi
 
-DEPLOY_JSON="$(api POST "/v1/services/${SERVICE_ID}/deploys" '{"clearCache":"clear"}')"
-DEPLOY_ID="$(printf '%s' "$DEPLOY_JSON" | python3 -c 'import json,sys; data=json.load(sys.stdin); print(data.get("id", ""))')"
+DEPLOY_JSON="$(api POST "/v1/services/${SERVICE_ID}/deploys" '{"clearCache":"clear"}' || true)"
+DEPLOY_ID=""
+if [[ -n "$DEPLOY_JSON" ]]; then
+  DEPLOY_ID="$(printf '%s' "$DEPLOY_JSON" | python3 -c 'import json,sys; data=json.load(sys.stdin); print(data.get("id", ""))' 2>/dev/null || true)"
+fi
 
 printf 'service_id=%s\n' "$SERVICE_ID"
 printf 'service_url=%s\n' "$SERVICE_URL"
