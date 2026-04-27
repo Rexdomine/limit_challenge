@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Local virtual environments
+.venv/
+backend/.venv/
+
+# SQLite and local static output
+backend/db.sqlite3
+backend/staticfiles/
+
+# Test/cache artifacts
+.pytest_cache/

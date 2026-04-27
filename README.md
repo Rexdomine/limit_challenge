@@ -120,6 +120,35 @@ Visit `http://localhost:3000/submissions` to start building.
 - Call out any stretch goals implemented.
 - Automated tests are optional, but including targeted backend or frontend tests is a strong signal.
 
+## Solution Summary
+
+### Approach
+
+- Kept the existing Django + DRF domain model and built out the API contract rather than reshaping the project from scratch.
+- Prioritized the frontend experience because the challenge weights UX, filter flow, and product polish most heavily.
+- Treated the list page as the main working surface for operations managers and the detail page as the supporting review surface.
+
+### What was implemented
+
+- Extended submission filtering for `brokerId` and `companySearch` and added optional higher-signal filters for `priority`, `hasDocuments`, and `hasNotes`.
+- Improved backend query behavior with `select_related` and `prefetch_related` to keep relational reads efficient.
+- Enabled the React Query hooks and wired the submission list to URL-driven filter state.
+- Built a polished list UI with status and priority treatment, broker and owner context, related counts, latest note preview, loading states, empty states, error handling, and pagination.
+- Built the detail page sections for summary information, contacts, documents, and note history.
+- Verified the frontend with lint, TypeScript, and a production Next.js build.
+
+### Tradeoffs
+
+- Focused on strengthening the read workflow rather than adding create or edit interactions, since the assignment is centered on browsing and inspecting submissions.
+- Added a few optional filters that increase reviewer signal without pulling time away from the core list/detail experience.
+- Kept the UI implementation within the provided Material UI stack instead of introducing extra component libraries or deployment complexity.
+
+### Stretch goals implemented
+
+- Additional filters beyond the required minimum: `priority`, `hasDocuments`, and `hasNotes`.
+- Shareable URL state for the list filters.
+- Stronger relational query loading for backend efficiency.
+
 ## Evaluation Rubric
 
 - **Frontend (45%)** – UX clarity, filter UX tied to query params, state/data management, handling
