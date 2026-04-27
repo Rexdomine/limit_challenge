@@ -18,7 +18,14 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from submissions.views import BrokerViewSet, SubmissionViewSet, healthcheck
+from submissions.views import (
+    BrokerViewSet,
+    SubmissionViewSet,
+    healthcheck,
+    login_view,
+    logout_view,
+    session_view,
+)
 
 router = DefaultRouter()
 router.register("submissions", SubmissionViewSet, basename="submission")
@@ -27,5 +34,8 @@ router.register("brokers", BrokerViewSet, basename="broker")
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('health/', healthcheck, name='healthcheck'),
+    path('api/auth/login/', login_view, name='login'),
+    path('api/auth/logout/', logout_view, name='logout'),
+    path('api/auth/session/', session_view, name='session'),
     path('api/', include(router.urls)),
 ]
