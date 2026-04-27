@@ -1,104 +1,95 @@
-# Submission Tracker Take-home Challenge
+# Submission Tracker
 
-This repository hosts the boilerplate for the Submission Tracker assignment. It includes a Django +
-Django REST Framework backend and a Next.js frontend scaffold so candidates can focus on API
-design, relational data modelling, and product-focused UI work.
+Submission Tracker is a take-home implementation for a broker-submitted opportunity review
+workspace. The product is built around a reviewer flow: authenticate, scan the submissions queue,
+filter by operational context, and inspect a full submission record with contacts, documents, and
+note history.
 
-## Challenge Overview
+## Stack
 
-Operations managers need a workspace to review broker-submitted opportunities. Build a lightweight
-tool that lets them browse incoming submissions, filter by business context, and inspect full
-details per record. Deliver a polished frontend experience backed by clean APIs.
+- Backend: Django, Django REST Framework, django-filter
+- Frontend: Next.js 16, React 19, Material UI, axios, TanStack React Query
+- Hosting: Vercel for `frontend/`, Render for `backend/`
 
-### Goals
+## What Shipped
 
-- **Backend:** Model the domain, expose list and detail endpoints, and support realistic filtering.
-- **Frontend (higher weight):** Craft an intuitive list and detail experience with filters that map
-  to query parameters. Focus on UX clarity, organization, and maintainability.
+- Reviewer login flow with protected frontend routes
+- Submission list view with:
+  - URL-driven filters
+  - broker dropdown
+  - company search
+  - status, priority, has-documents, and has-notes filtering
+  - pagination
+  - custom loading, empty, and error states
+- Submission detail view with:
+  - overview, contacts, documents, and notes/timeline sections
+  - custom loading and error states
+- GitHub-driven Vercel deploy flow for previews and production
 
-## Data Model
+## Auth And Session Approach
 
-Required entities (already defined in `submissions/models.py`):
+The frontend uses a reviewer session model backed by Django auth endpoints:
 
-- `Broker`: name, contact email
-- `Company`: legal name, industry, headquarters city
-- `TeamMember`: internal owner for a submission
-- `Submission`: links to company, broker, owner with status, priority, and summary
-- `Contact`: primary contacts for a submission
-- `Document`: references to supporting files
-- `Note`: threaded context for collaboration
+- `POST /api/auth/login/`
+- `GET /api/auth/session/`
+- `POST /api/auth/logout/`
 
-Seed data (~25 submissions with dozens of related contacts, documents, and notes) is available via
-`python manage.py seed_submissions`. Re-run with `--force` to rebuild the dataset.
+For hosted environments, the browser does not call the Render backend directly. Instead, the
+Next.js app proxies API traffic through `frontend/app/api/backend/[...path]/route.ts`. That keeps
+the browser on the frontend origin and avoids fragile cross-site cookie behavior between
+`vercel.app` and `onrender.com`.
 
-## API Requirements
+In local development:
+
+- frontend API calls default to `http://localhost:8000/api` when the app is served from `localhost`
+- the demo reviewer login defaults to:
+  - username: `reviewer`
+  - password: `limit-review-2026`
+
+Backend env overrides:
+
+- `REVIEWER_LOGIN_USERNAME`
+- `REVIEWER_LOGIN_PASSWORD`
+- `REVIEWER_LOGIN_NAME`
+
+## Architecture Notes
+
+### Backend
+
+The backend keeps the existing relational model and exposes a lightweight review API:
 
 - `GET /api/submissions/`
-  - Returns paginated submissions with company, broker, owner, counts of related documents/notes,
-    and the latest note preview.
-  - Supports filters via query params. `status` is wired up; extend filters for `brokerId` and
-    `companySearch` (plus optional extras like `createdFrom`, `createdTo`, `hasDocuments`, `hasNotes`).
 - `GET /api/submissions/<id>/`
-  - Returns the full submission plus related contacts, documents, and notes.
 - `GET /api/brokers/`
-  - Returns brokers for the frontend dropdown.
 
-Viewsets, serializers, and base filters are in place but intentionally minimal so you can refine
-the query behavior and filtering logic.
+Implemented backend improvements:
 
-## Frontend Workspace Overview
+- extended filters for `brokerId`, `companySearch`, `priority`, `hasDocuments`, and `hasNotes`
+- relational query optimization using `select_related` and `prefetch_related`
+- list responses that include related counts and latest note preview
 
-The Next.js 16 + React 19 app in `frontend/` is pre-wired for this challenge. Material UI handles
-layout, axios powers HTTP requests, and `@tanstack/react-query` is ready for data fetching. The list
-and detail routes under `/submissions` are scaffolded so you can focus on API consumption and UX
-polish.
+### Frontend
 
-### What is pre-built?
+The frontend is organized around route-level reviewer screens:
 
-- Global providers supply Material UI theming and a shared React Query client.
-- `/submissions` hosts the list view with filter inputs and hints about required query params.
-- `/submissions/[id]` hosts the detail shell and links back to the list.
-- Custom hooks in `lib/hooks` define how to fetch submissions and brokers. Each hook is disabled by
-  default (`enabled: false`) so no network requests fire until you enable them.
+- `/login`
+- `/submissions`
+- `/submissions/[id]`
 
-### What you need to implement
+React Query is used for list/detail/broker data access. Filter state is reflected in the URL so the
+submissions workspace is shareable and browser-navigation friendly.
 
-- Wire the filter state to query parameters and React Query `queryFn`s.
-- Render table/card layouts for the submission list along with loading, empty, and error states.
-- Build the detail page sections for summary data, contacts, documents, and notes.
-- Enable the queries and handle pagination or other UX you want to highlight.
-
-## Project Structure
-
-- `backend/`: Django project with REST API, seed command, and submission models.
-- `frontend/`: Next.js app described above.
-- `INTERVIEWER_NOTES.md`: Context for reviewers/interviewers.
-
-## Environment Variables
-
-- In local development, frontend requests default to `http://localhost:8000/api` when you run the app on `localhost`.
-- For any hosted deployment, `NEXT_PUBLIC_API_BASE_URL` must be set explicitly to the public backend `/api` URL.
-- Backend reviewer login defaults to:
-  - `REVIEWER_LOGIN_USERNAME=reviewer`
-  - `REVIEWER_LOGIN_PASSWORD=limit-review-2026`
-  - `REVIEWER_LOGIN_NAME=Demo Reviewer`
-
-### Deployment Variables
-
-- `frontend/.env.example` is the source of truth for required frontend env names.
-- For public Vercel deployments, `NEXT_PUBLIC_API_BASE_URL` must point at a hosted backend API, not localhost.
-
-## Getting Started
+## Local Development
 
 ### Backend
 
 ```bash
 cd backend
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py seed_submissions  # optional but recommended
-# add --force to rebuild the generated sample data
+python manage.py seed_submissions
 python manage.py runserver 0.0.0.0:8000
 ```
 
@@ -107,134 +98,109 @@ python manage.py runserver 0.0.0.0:8000
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local  # create if you want a custom API base
-# NEXT_PUBLIC_API_BASE_URL defaults to http://localhost:8000/api only on localhost
+cp .env.example .env.local
 npm run dev
 ```
 
-Visit `http://localhost:3000/submissions` to start building.
+Default local URLs:
 
-### Reviewer Login
-
-The app now ships with a login-only reviewer flow that protects the API and frontend workspace.
-
-- Default login URL: `http://localhost:3000/login`
-- Demo username: `reviewer`
-- Demo password: `limit-review-2026`
-- To override credentials, export `REVIEWER_LOGIN_USERNAME`, `REVIEWER_LOGIN_PASSWORD`, and
-  `REVIEWER_LOGIN_NAME` before starting the Django server.
+- frontend: `http://localhost:3000`
+- login: `http://localhost:3000/login`
+- submissions list: `http://localhost:3000/submissions`
 
 ## Deployment
 
-The public frontend target for this project is the Next.js app in `frontend/`, with Vercel as the target platform.
+### Frontend
 
-Run the repo-local preflight before attempting a deploy:
+The production frontend target is the Next.js app in `frontend/`.
 
-```bash
-cd /home/node/.openclaw/workspace/limit_challenge
-bash scripts/vercel-preflight.sh
-```
+GitHub Actions is the default deploy path:
 
-For a full verification pass including a production build:
+- pull requests trigger Vercel preview deploys
+- merges to `main` trigger Vercel production deploys
 
-```bash
-cd /home/node/.openclaw/workspace/limit_challenge
-bash scripts/vercel-preflight.sh --build
-```
+Required GitHub secrets:
 
-Preview deploys should go through the repo-local wrapper so the build always uses the hosted Render backend automatically:
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
 
-```bash
-cd /home/node/.openclaw/workspace/limit_challenge
-bash scripts/vercel-preview-deploy.sh
-```
+Required GitHub repository variable:
 
-Production deploy:
+- `NEXT_PUBLIC_API_BASE_URL`
 
-```bash
-cd /home/node/.openclaw/workspace/limit_challenge
-bash scripts/vercel-production-deploy.sh
-```
+Optional preview variable:
 
-Both deploy wrappers now run a post-deploy smoke check so a deployment fails fast if:
+- `NEXT_PUBLIC_API_BASE_URL_PREVIEW`
 
-- the homepage is still serving the legacy `Go to Submissions` scaffold
-- the reviewer login shell is missing
-- the deployed frontend does not report the expected `NEXT_PUBLIC_API_BASE_URL`
+Deployment helpers:
 
-Full deployment notes and rollback guidance live in `docs/deployment.md`.
+- `bash scripts/vercel-preflight.sh`
+- `bash scripts/vercel-preview-deploy.sh`
+- `bash scripts/vercel-production-deploy.sh`
 
-### Backend Hosting
+Full operational notes are in [docs/deployment.md](/home/node/.openclaw/workspace/limit_challenge/docs/deployment.md).
 
-The Django backend in `backend/` can be deployed independently to Render.
+### Backend
 
-- Blueprint spec: `render.yaml`
-- Repo-local helper: `bash scripts/render-backend-deploy.sh`
-- Default service name: `limit-challenge-backend`
-- Health endpoint: `/health/`
+The backend is deployable independently to Render.
 
-Required runtime secret:
+- blueprint: `render.yaml`
+- helper: `bash scripts/render-backend-deploy.sh`
+- health endpoint: `/health/`
 
-- `RENDER_API_KEY` for the deploy helper
+Required secret:
 
-Optional helper env:
+- `RENDER_API_KEY`
 
-- `RENDER_FRONTEND_ORIGIN` to allow a hosted frontend origin through CORS and CSRF settings
+Useful optional env:
 
-## Development Workflow
+- `RENDER_FRONTEND_ORIGIN`
 
-1. Start the Django server on port 8000 (`python manage.py runserver`).
-2. Start the Next.js dev server on port 3000 (`npm run dev`).
-3. Iterate on backend filters, serializers, and viewsets, then refresh the frontend to see updated
-   data.
-4. When ready, add README notes summarizing your approach, tradeoffs, and any stretch goals.
+## Project Structure
 
-## Submission Instructions
+- `backend/`: Django project, API, data model, seed command
+- `frontend/`: Next.js reviewer application
+- `docs/deployment.md`: deployment and rollback notes
+- `INTERVIEWER_NOTES.md`: private reviewer guidance from the starter kit
 
-- Provide a short README update summarizing approach, tradeoffs, and how to run the solution.
-- Record and share a brief screen capture (max 2 minutes) demonstrating the frontend working end-to-end with the backend.
-- Call out any stretch goals implemented.
-- Automated tests are optional, but including targeted backend or frontend tests is a strong signal.
+## Tradeoffs
 
-## Solution Summary
+- I prioritized the review workflow over create/edit tooling because the assignment is centered on
+  browsing and inspection.
+- I stayed within the provided MUI-based frontend stack rather than introducing a new component
+  system or CSS framework migration.
+- I used SQLite for the demo backend deployment path because it keeps setup simple, though it is not
+  the right choice for durable production data.
 
-### Approach
+## Stretch Improvements Implemented
 
-- Kept the existing Django + DRF domain model and built out the API contract rather than reshaping the project from scratch.
-- Prioritized the frontend experience because the challenge weights UX, filter flow, and product polish most heavily.
-- Treated the list page as the main working surface for operations managers and the detail page as the supporting review surface.
+- extra filters beyond the minimum required prompt
+- shareable URL state for the submissions list
+- custom loading, empty, and error states for list and detail pages
+- hosted-session proxying to make reviewer auth stable in deployment
+- GitHub-driven Vercel preview/production deployment flow
 
-### What was implemented
+## Validation
 
-- Extended submission filtering for `brokerId` and `companySearch` and added optional higher-signal filters for `priority`, `hasDocuments`, and `hasNotes`.
-- Improved backend query behavior with `select_related` and `prefetch_related` to keep relational reads efficient.
-- Enabled the React Query hooks and wired the submission list to URL-driven filter state.
-- Built a polished list UI with status and priority treatment, broker and owner context, related counts, latest note preview, loading states, empty states, error handling, and pagination.
-- Built the detail page sections for summary information, contacts, documents, and note history.
-- Verified the frontend with lint, TypeScript, and a production Next.js build.
+Frontend validation used during delivery:
 
-### Tradeoffs
+- `npm run lint`
+- `npm run build`
 
-- Focused on strengthening the read workflow rather than adding create or edit interactions, since the assignment is centered on browsing and inspecting submissions.
-- Added a few optional filters that increase reviewer signal without pulling time away from the core list/detail experience.
-- Kept the UI implementation within the provided Material UI stack instead of introducing extra component libraries or deployment complexity.
+Backend validation focused on endpoint behavior, relational data loading, and deploy/runtime checks.
 
-### Stretch goals implemented
+## Reviewer Notes
 
-- Additional filters beyond the required minimum: `priority`, `hasDocuments`, and `hasNotes`.
-- Shareable URL state for the list filters.
-- Stronger relational query loading for backend efficiency.
+If reviewing the project live, the fastest end-to-end path is:
 
-## Evaluation Rubric
+1. Open `/login`
+2. Sign in with the reviewer credentials
+3. Test filter behavior on `/submissions`
+4. Open a submission detail view
+5. Confirm loading and error states behave intentionally
 
-- **Frontend (45%)** – UX clarity, filter UX tied to query params, state/data management, handling
-  of loading/empty/error cases, and overall polish.
-- **Backend (30%)** – API design, serialization choices, filtering implementation, and attention to
-  relational data handling.
-- **Code Quality (15%)** – Structure, naming, documentation/readability, testing where it adds
-  value.
-- **Product Thinking (10%)** – Workflow clarity, assumptions noted, and thoughtful UX details.
+## Demo Credentials
 
-## Optional Bonus
-
-Authentication, deployment, or extra tooling are not required but welcome if scope allows.
+- Username: `reviewer`
+- Password: `limit-review-2026`
